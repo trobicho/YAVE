@@ -19,11 +19,17 @@ void	YaveParamsValidator::instanceParamsChecker(YaveInstanceParams_t &yaveInstan
 		throw YaveLib::YaveInvalidInstanceParam(
 			"invalid vulkan parameter: validationLayerName");
 	}
-	if (yaveInstanceParams.extensionCount > 0
-		&& yaveInstanceParams.extensionName == nullptr
+	if (yaveInstanceParams.instanceExtensionCount > 0
+		&& yaveInstanceParams.instanceExtensionName == nullptr
 	{
 		throw YaveLib::YaveInvalidInstanceParam(
-			"invalid vulkan parameter: extensionName");
+			"invalid vulkan parameter: instanceExtensionName");
+	}
+	if (yaveInstanceParams.deviceExtensionCount > 0
+		&& yaveInstanceParams.deviceExtensionName == nullptr
+	{
+		throw YaveLib::YaveInvalidInstanceParam(
+			"invalid vulkan parameter: deviceExtensionName");
 	}
 }
 
@@ -56,7 +62,7 @@ void	YaveParamsValidator::validationLayerValidator(
 	}
 }
 
-void	YaveParamsValidator::extensionCheck(uint32_t extensionCount
+void	YaveParamsValidator::instanceExtensionCheck(uint32_t extensionCount
 	, const char* const* extensionNames);
 {
 	uint32 instanceExtensionCount = 0;

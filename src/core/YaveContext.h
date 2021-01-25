@@ -20,3 +20,12 @@ struct	VulkanContext
 	VkQueue		graphicsQueue;
 	VkQueue		presentQueue;
 };
+
+class	DevicePicker
+{
+	public:
+		virtual int&	rateDevice(gpuInfo_t &gpu);
+
+	private:
+		DevicePicker(){};
+}
