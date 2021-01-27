@@ -16,13 +16,15 @@ static const char	*g_validationLayers[g_numValidatinLayers] = {
 
 struct	YaveViewInfo_t
 {
+	VkExtent					winExtent;
 	VkSurfaceKHR				surface;
 	VkSwapchainKHR				swapchain;
 	VkFormat					swapchainImageFormat;
 	VkExtent2D					swapchainExtent;
 	std::vector<VkImage>		swapchainImages;
-	std::vector<VkImageViews>	swapchainViews
+	std::vector<VkImageView>	imageViews;
 	std::vector<VkFramebuffer>	frameBuffers;
+	uint32_t					frameCount;
 }
 
 class	YaveSurfaceHandler
@@ -30,7 +32,7 @@ class	YaveSurfaceHandler
 	public:
 		virtual	YaveSurfaceHandler() = 0;
 
-		virtual VkResult	createSurface(VkInstance&, VkAllocationCallbacks*, VkSurfaceKHR&) = 0;
+		virtual VkResult	createSurface(VkInstance&, VkSurfaceKHR&) = 0;
 		virtual VkResult	destroySurface(VkSurfaceKHR&);
 }
 
@@ -39,7 +41,7 @@ class	YaveSwapchainHandler
 	public:
 		virtual	YaveSwapchainHandler() = 0;
 
-		virtual VkResult	createSwaphain(YaveViewInfo_t &viewInfo) = 0;
+		virtual VkResult	createSwaphain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu) = 0;
 		virtual VkResult	destroySwapchain(YaveViewInfo_t &viewInfo) = 0;
 }
 
@@ -72,13 +74,11 @@ class	YaveFramebuffersHandler
 
 struct	YaveInstanceParams_t
 {
-	const char* const*			applicationName;
-	uint32_t					validationLayerCount = 0; //TODO: vector or something
-	const char* const*			validationLayerNames;
-	uint32_t					instanceExtensionCount = 0;
-	const char* const*			instanceExtensionNames;
-	uint32_t					deviceExtensionCount = 0;
-	const char* const*			deviceExtensionNames;
+	std::string					applicationName;
+	std::vector<const char*>	validationLayers;
+	std::vector<const char*>	instanceExtensions;
+	std::vector<const char*>	deviceExtensions;
+	VkExtent2D					windowExtent;
 
 	YaveSurfaceHandler			&surfaceHandler;
 	YaveSwapchainHandler		&swapchainHandler;
@@ -93,8 +93,6 @@ struct	YaveInstanceParams_t
 namespace	YaveParamsValidator
 {
 	void	instanceParamsChecker(YaveInstanceParams_t &yaveInstanceParams);
-	void	validationLayerCheck(uint32_t validationLayerCount
-		, const char* const* validationLayerNames);
-	void	instanceExtensionCheck(uint32_t extensionCount
-		, const char* const* extensionNames);
+	void	validationLayersCheck(std::vector<const char*> validationLayers);
+	void	instanceExtensionsCheck(std::vector<const char*> extensions);
 }

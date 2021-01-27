@@ -8,19 +8,18 @@ YaveRenderer::YaveRenderer(YaveInstanceParams_t &yaveInstanceParams):
 	m_yaveInstanceParams(yaveInstanceParams);
 {
 	YaveParamsValidator::instanceParamsChecker(m_yaveInstanceParams);
-	YaveParamsValidator::validationLayerCheck(
-		m_yaveInstanceParams.validationLayerCount,
-		m_yaveInstanceParams.validationLayerNames
+	YaveParamsValidator::validationLayersCheck(
+		m_yaveInstanceParams.validationLayers
 	);
-	YaveParamsValidator::instanceExtensionCheck(
-		m_yaveInstanceParams.instanceExtensionCount,
-		m_yaveInstanceParams.instanceExtensionNames
+	YaveParamsValidator::instanceExtensionsCheck(
+		m_yaveInstanceParams.instanceExtensions
 	);
 
 	m_surfaceHandler = m_yaveInstanceParams.surfaceHandler;
 	m_swapchainHandler = m_yaveInstanceParams.swapchainHandler;
 	m_renderPassHandler = m_yaveInstanceParams.renderPassHandler;
 	m_framebuffersHandler = m_yaveInstanceParams.framebuffersHandler;
+	m_viewInfo.winExtent = m_yaveInstanceParams.windowExtent;
 }
 
 YaveRenderer::~YaveRenderer()
@@ -63,7 +62,7 @@ void	YaveRenderer::createInstance()
 {
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = m_yaveInstanceParams.applicationName;
+	appInfo.pApplicationName = m_yaveInstanceParams.applicationName.c_str();
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = "Yave";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -73,10 +72,12 @@ void	YaveRenderer::createInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-	createInfo.enabledExtensionCount = m_yaveInstanceParams.instanceExtensionCount;
-	createInfo.ppEnabledExtensionNames = m_yaveInstanceParams.instanceExtensionNames;
-	createInfo.enabledLayerCount = m_yaveInstanceParams.validationLayerCount;
-	createInfo.ppEnabledLayerNames = m_yaveInstanceParams.validationLayerNames;
+	createInfo.enabledExtensionCount = static_cast<uint32_t>
+		m_yaveInstanceParams.instanceExtensions.size()
+	createInfo.ppEnabledExtensionNames = m_yaveInstanceParams.instanceExtensions.data();
+	createInfo.enabledLayerCount = static_cast<uint32_t>
+		m_yaveInstanceParams.validationLayers.size();
+	createInfo.ppEnabledLayerNames = m_yaveInstanceParams.validationLayers.data();
 
 	if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
 		throw YaveLib::FatalVulkanInitError("failed to create instance!\n");
@@ -142,10 +143,12 @@ void	YaveRenderer::createLogicalDeviceAndQueue()
 	createInfo.queueCreateInfoCount = devqInfo.size();
 	createInfo.pQueueCreateInfos = devqInfo.data();
 	createInfo.pEnabledFeatures = m_yaveInstanceParams.deviceFeatures;
-	createInfo.enabledExtensionCount = m_yaveInstanceParams.deviceExtensionCount;
-	createInfo.ppEnabledExtensionCount = m_yaveInstanceParams.deviceExtensionNames;
-	createInfo.enabledLayerCount = m_yaveInstanceParams.validationLayerCount;
-	createInfo.enabledLayerCount = m_yaveInstanceParams.validationLayerNames;
+	createInfo.enabledExtensionCount = static_cast<uint32_t>
+		m_yaveInstanceParams.deviceExtensions.size();
+	createInfo.ppEnabledExtensionCount = m_yaveInstanceParams.deviceExtensions.data();
+	createInfo.enabledLayerCount = static_cast<uint32_t>
+		m_yaveInstanceParams.validationLayers.size();
+	createInfo.enabledLayerCount = m_yaveInstanceParams.validationLayers.data();
 
 	if (vkCreateDevice(m_physicalDevice, &createInfo
 		, m_yaveInstanceParams.allocatorCallbacks, &vkContext.device) != VK_SUCCESS
@@ -164,24 +167,24 @@ void	YaveRenderer::createSurface()
 
 void	YaveRenderer::createSwapchain()
 {
-	if (m_swapchainHandler.createSwapchain(m_viewInfo) != VK_RESULT) //probably try catch
+	if (m_swapchainHandler.createSwapchain(m_viewInfo) != VK_SUCCESS) //probably try catch
 		throw YaveLib::FatalVulkanInitError("failed to create swapchain!\n");
 }
 
 void	YaveRenderer::createImageView()
 {
-	if (m_imageViewHandler.createImageView(m_viewInfo) != VK_RESULT) //probably try catch
+	if (m_imageViewHandler.createImageView(m_viewInfo) != VK_SUCCESS) //probably try catch
 		throw YaveLib::FatalVulkanInitError("failed to create imageView!\n");
 }
 
 void	YaveRenderer::createRenderPass()
 {
-	if (m_renderPassHandler.createRenderPass(m_viewInfo) != VK_RESULT) //probably try catch
+	if (m_renderPassHandler.createRenderPass(m_viewInfo) != VK_SUCCESS) //probably try catch
 		throw YaveLib::FatalVulkanInitError("failed to create renderPass!\n");
 }
 
 void	YaveRenderer::createFramebuffers()
 {
-	if (m_framebuffersHandler.createFramebuffers(m_viewInfo) != VK_RESULT) //probably try catch
+	if (m_framebuffersHandler.createFramebuffers(m_viewInfo) != VK_SUCCESS) //probably try catch
 		throw YaveLib::FatalVulkanInitError("failed to create frameBuffers!\n");
 }

@@ -30,5 +30,12 @@ namespace YaveLib
 		public:
   			explicit	YaveInstanceParamError(const string& what_arg);
   			explicit	YaveInstanceParamError(const char* what_arg);
-	}
+	};
+
+	class YaveHandlerError: public exception
+	{
+		public:
+  			explicit	YaveHandlerError(const string& what_arg);
+  			explicit	YaveHandlerError(const char* what_arg);
+	};
 };
