@@ -28,7 +28,9 @@ struct	vulkanContext_t
 
 	VkRenderPass			renderPass;
 	VkPipelineCache			pipelineCache;
+
 	VkAllocationCallbacks	*allocatorCallbacks = nullptr;
+	uint32_t				frameCount;
 };
 
 extern vulkanContext_t	vkContext;

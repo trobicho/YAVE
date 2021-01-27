@@ -26,7 +26,7 @@ class YaveRenderer
 
 		YaveSurfaceHandler		&m_surfaceHandler;
 		YaveSwapchainHandler	&m_swapChainHandler;
-		YaveImageViewHandler	&m_imageViewHandler;
+		YaveImageViewsHandler	&m_imageViewsHandler;
 		YaveRenderPassHandler	&m_renderPassHandler;
 		YaveFramebuffersHandler	&m_framebuffersHandler;
 

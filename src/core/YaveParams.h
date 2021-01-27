@@ -27,6 +27,13 @@ struct	YaveViewInfo_t
 	uint32_t					frameCount;
 }
 
+/*
+=============
+Fully virtual handler class
+to handle creation of vulkan object
+=============
+*/
+
 class	YaveSurfaceHandler
 {
 	public:
@@ -45,13 +52,13 @@ class	YaveSwapchainHandler
 		virtual VkResult	destroySwapchain(YaveViewInfo_t &viewInfo) = 0;
 }
 
-class	YaveImageViewHandler
+class	YaveImageViewsHandler
 {
 	public:
-		virtual	YaveImageViewHandler() = 0;
+		virtual	YaveImageViewsHandler() = 0;
 
-		virtual VkResult	createImageView(YaveViewInfo_t &viewInfo) = 0;
-		virtual VkResult	destroyImageView(YaveViewInfo_t &viewInfo) = 0;
+		virtual VkResult	createImageViews(YaveViewInfo_t &viewInfo) = 0;
+		virtual VkResult	destroyImageViews(YaveViewInfo_t &viewInfo) = 0;
 }
 
 class	YaveRenderPassHandler
@@ -71,6 +78,13 @@ class	YaveFramebuffersHandler
 		virtual VkResult	createFramebuffers(YaveViewInfo_t &viewInfo) = 0;
 		virtual VkResult	destroyFramebuffers(YaveViewInfo_t &viewInfo) = 0;
 }
+
+/*
+=============
+Yave instance creation parameter used by YaveRenderer::init()
+and swapchain recreation
+=============
+*/
 
 struct	YaveInstanceParams_t
 {

@@ -55,6 +55,12 @@ void	YaveRenderer::init()
 
 	createSwapChain();
 
+	createImageViews();
+
+	createRenderPass();
+
+	createFramebuffers();
+
 	m_isInit = true;//XXX probably init() in constructor
 }
 
@@ -167,24 +173,25 @@ void	YaveRenderer::createSurface()
 
 void	YaveRenderer::createSwapchain()
 {
-	if (m_swapchainHandler.createSwapchain(m_viewInfo) != VK_SUCCESS) //probably try catch
+	if (m_swapchainHandler.createSwapchain(m_viewInfo) != VK_SUCCESS)
 		throw YaveLib::FatalVulkanInitError("failed to create swapchain!\n");
+	vkContext.frameCount = m_viewInfo.frameCount
 }
 
-void	YaveRenderer::createImageView()
+void	YaveRenderer::createImageViews()
 {
-	if (m_imageViewHandler.createImageView(m_viewInfo) != VK_SUCCESS) //probably try catch
-		throw YaveLib::FatalVulkanInitError("failed to create imageView!\n");
+	if (m_imageViewsHandler.createImageViews(m_viewInfo) != VK_SUCCESS)
+		throw YaveLib::FatalVulkanInitError("failed to create image views!\n");
 }
 
 void	YaveRenderer::createRenderPass()
 {
-	if (m_renderPassHandler.createRenderPass(m_viewInfo) != VK_SUCCESS) //probably try catch
-		throw YaveLib::FatalVulkanInitError("failed to create renderPass!\n");
+	if (m_renderPassHandler.createRenderPass(m_viewInfo) != VK_SUCCESS)
+		throw YaveLib::FatalVulkanInitError("failed to create render pass!\n");
 }
 
 void	YaveRenderer::createFramebuffers()
 {
-	if (m_framebuffersHandler.createFramebuffers(m_viewInfo) != VK_SUCCESS) //probably try catch
-		throw YaveLib::FatalVulkanInitError("failed to create frameBuffers!\n");
+	if (m_framebuffersHandler.createFramebuffers(m_viewInfo) != VK_SUCCESS)
+		throw YaveLib::FatalVulkanInitError("failed to create frame buffers!\n");
 }

@@ -112,7 +112,7 @@ VkPresentModeKHR	YaveBasicSwapchainHandler::chooseSurfaceExtent(
 
 //-------------------ImageView------------------
 
-VkResult	YaveBasicImageViewHandler::createImageView(YaveViewInfo_t &viewInfo)
+VkResult	YaveBasicImageViewsHandler::createImageViews(YaveViewInfo_t &viewInfo)
 {
 	viewInfo.imageViews.resize(viewInfo.swapchainImages.size());
 	for (int i = 0; i < viewInfo.frameCount; ++i)
@@ -139,7 +139,7 @@ VkResult	YaveBasicImageViewHandler::createImageView(YaveViewInfo_t &viewInfo)
 	return (VK_SUCCESS);
 }
 
-VkResult	YaveBasicImageViewHandler::destroyImageView(YaveViewInfo_t &viewInfo)
+VkResult	YaveBasicImageViewHandler::destroyImageViews(YaveViewInfo_t &viewInfo)
 {
 	for (auto &imageView: viewInfo.imageViews)
 	{
@@ -159,7 +159,7 @@ VkResult	YaveBasicRenderPassHandler::createRenderPass(YaveViewInfo_t &viewInfo)
 	static VkAttachmentReference	depthAttachmentRef = {};
 	static VkSubpassDescription		subpass = {};
 	static VkSubpassDependency		subpassDep = {};
-	VkRenderPassCreateInfo			renderPassCreateInfo = {};
+	VkRenderPassCreateInfo			info = {};
 
 	colorAttachment.format = viewInfo.swapchainImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -178,11 +178,22 @@ VkResult	YaveBasicRenderPassHandler::createRenderPass(YaveViewInfo_t &viewInfo)
 	subpass.pColorAttachments = &colorAttachmentRef;
 	subpass.pDepthStencilAttachment = nullptr;
 
+	subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDep.dstSubpass = 0;
+	subpassDep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDep.srcAccessMask = 0;
+	subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+		| VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	std::array<VkAttachmentDescription, 1> attachments =
 		{colorAttachment};
 
-	info.dependencyCount = 0;
-	info.pDependencies = nullptr;
+	std::array<VkAttachmentDescription, 1> attachments =
+		{colorAttachment};
+
+	info.dependencyCount = 1;
+	info.pDependencies = &subpassDep;
 	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	info.attachmentCount =
 		static_cast<uint32_t>(attachments.size());
@@ -202,3 +213,39 @@ VkResult	YaveBasicRenderPassHandler::destroyRenderPass(YaveViewInfo_t &viewInfo)
 }
 
 //------------------Framebuffers----------------
+
+VkResult	YaveBasicFramebuffersHandler::createFramebuffers(YaveViewInfo_t &viewInfo)
+{
+	viewInfo.framebuffers.resize(viewInfo.imageViews.size());
+	while (i < viewInfo.imageViews[i])
+	{
+		VkFramebufferCreateInfo	info = {};
+		std::array<VkImageView, 1> attachments =
+			{viewInfo.imageViews[i]};
+		framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebuffer_info.renderPass = m_render_pass;
+		framebuffer_info.attachmentCount =
+			static_cast<uint32_t>(attachments.size());
+		framebuffer_info.pAttachments = attachments.data();
+		framebuffer_info.width = viewInfo.swapchainExtent.width;
+		framebuffer_info.height = viewInfo.swapchainExtent.height;
+		framebuffer_info.layers = 1;
+		if (vkCreateFramebuffer(m_device, &framebuffer_info, NULL
+				, &m_framebuffer[i]) != VK_SUCCESS)
+		{
+			throw YaveLib::YaveHandlerError("failed to create framebuffers!");
+		}
+		i++;
+	}
+	return (VK_SUCCESS);
+}
+
+VkResult	YaveBasicFramebuffersHandler::destroyFrameBuffers(YaveViewInfo_t &viewInfo)
+{
+	for (auto &framebuffer: viewInfo.framebuffers)
+	{
+		vkDestroyFramebuffer(vkContext.device, framebuffer, vkContext.allocatorCallbacks);
+	}
+	viewInfo.framebuffers.clear();
+	return (VK_SUCCESS);
+}
