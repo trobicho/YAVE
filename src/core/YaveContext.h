@@ -16,16 +16,22 @@ struct	gpuInfo_t
   std::vector<VkExtensionProperties>	extensionProps;
 };
 
-struct	VulkanContext
+struct	vulkanContext_t
 {
 	gpuInfo_t				gpu;
+
 	VkDevice				device;
 	int						graphicsFamilyIdx;
 	int						presentFamilyIdx;
 	VkQueue					graphicsQueue;
 	VkQueue					presentQueue;
+
+	VkRenderPass			renderPass;
+	VkPipelineCache			pipelineCache;
 	VkAllocationCallbacks	*allocatorCallbacks = nullptr;
 };
+
+extern vulkanContext_t	vkContext;
 
 class	DevicePicker
 {

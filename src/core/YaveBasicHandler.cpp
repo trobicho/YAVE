@@ -129,7 +129,7 @@ VkResult	YaveBasicImageViewHandler::createImageView(YaveViewInfo_t &viewInfo)
 		info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		info.subresourceRange.baseMipLevel = 0;
 		info.subresourceRange.levelCount = 1;
-		info.subresourceRange.baseArrayLayer = 1;
+		info.subresourceRange.baseArrayLayer = 0;
 		info.subresourceRange.layerCount = 1;
 		info.flags = 0;
 		if (vkCreateImageView(vkContext.device, &info
@@ -150,5 +150,55 @@ VkResult	YaveBasicImageViewHandler::destroyImageView(YaveViewInfo_t &viewInfo)
 }
 
 //-------------------RenderPass-----------------
+
+VkResult	YaveBasicRenderPassHandler::createRenderPass(YaveViewInfo_t &viewInfo)
+{
+	static VkAttachmentDescription	colorAttachment = {};
+	static VkAttachmentReference	colorAttachmentRef = {};
+	static VkAttachmentDescription	depthAttachment = {};
+	static VkAttachmentReference	depthAttachmentRef = {};
+	static VkSubpassDescription		subpass = {};
+	static VkSubpassDependency		subpassDep = {};
+	VkRenderPassCreateInfo			renderPassCreateInfo = {};
+
+	colorAttachment.format = viewInfo.swapchainImageFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.pDepthStencilAttachment = nullptr;
+
+	std::array<VkAttachmentDescription, 1> attachments =
+		{colorAttachment};
+
+	info.dependencyCount = 0;
+	info.pDependencies = nullptr;
+	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	info.attachmentCount =
+		static_cast<uint32_t>(attachments.size());
+	info.pAttachments = attachments.data();
+	info.subpassCount = 1;
+	info.pSubpasses = &subpass;
+	if (vkCreateRenderPass(vkContext.device, &info, vkContext.allocatorCallbacks
+		, &vkContext.renderPass) != VK_SUCCESS)
+		throw YaveLib::YaveHandlerError("failed to create render pass!");
+	return (VK_SUCCESS);
+}
+
+VkResult	YaveBasicRenderPassHandler::destroyRenderPass(YaveViewInfo_t &viewInfo)
+{
+	vkDestroyRenderPass(vkContext.device, vkContext.renderPass);
+	return (VK_SUCCESS);
+}
 
 //------------------Framebuffers----------------

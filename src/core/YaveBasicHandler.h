@@ -15,4 +15,22 @@ class	YaveBasicSwapchainHandler : public YaveSwapchainHandler
 
 	private:
 		uint32_t	m_frameCount;
-}
+};
+
+class	YaveBasicImageViewHandler: public YaveImageViewHandler
+{
+	public:
+		YaveImageViewHandler() : {};
+
+		VkResult	createImageView(YaveViewInfo_t &viewInfo);
+		VkResult	destroyImageView(YaveViewInfo_t &viewInfo);
+};
+
+class	YaveBasicRenderPassHandler : public YaveRenderPassHandler
+{
+	public:
+		YaveRenderPassHandler() : {};
+
+		VkResult	createRenderPass(YaveViewInfo_t &viewInfo);
+		VkResult	destroyRenderPass(YaveViewInfo_t &viewInfo);
+};
