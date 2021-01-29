@@ -217,7 +217,7 @@ VkResult	YaveBasicRenderPassHandler::destroyRenderPass(YaveViewInfo_t &viewInfo)
 VkResult	YaveBasicFramebuffersHandler::createFramebuffers(YaveViewInfo_t &viewInfo)
 {
 	viewInfo.framebuffers.resize(viewInfo.imageViews.size());
-	while (i < viewInfo.imageViews[i])
+	for (int i = 0; i < viewInfo.imageViews[i]; ++i)
 	{
 		VkFramebufferCreateInfo	info = {};
 		std::array<VkImageView, 1> attachments =
@@ -231,16 +231,13 @@ VkResult	YaveBasicFramebuffersHandler::createFramebuffers(YaveViewInfo_t &viewIn
 		framebuffer_info.height = viewInfo.swapchainExtent.height;
 		framebuffer_info.layers = 1;
 		if (vkCreateFramebuffer(m_device, &framebuffer_info, NULL
-				, &m_framebuffer[i]) != VK_SUCCESS)
-		{
+			, &m_framebuffer[i]) != VK_SUCCESS)
 			throw YaveLib::YaveHandlerError("failed to create framebuffers!");
-		}
-		i++;
 	}
 	return (VK_SUCCESS);
 }
 
-VkResult	YaveBasicFramebuffersHandler::destroyFrameBuffers(YaveViewInfo_t &viewInfo)
+VkResult	YaveBasicFramebuffersHandler::destroyFramebuffers(YaveViewInfo_t &viewInfo)
 {
 	for (auto &framebuffer: viewInfo.framebuffers)
 	{

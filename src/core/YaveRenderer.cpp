@@ -86,7 +86,7 @@ void	YaveRenderer::createInstance()
 	createInfo.ppEnabledLayerNames = m_yaveInstanceParams.validationLayers.data();
 
 	if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
-		throw YaveLib::FatalVulkanInitError("failed to create instance!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create instance!");
 
 	return (0);
 }
@@ -120,7 +120,7 @@ void	YaveRenderer::choosePhysicalDevice() //TODO: Implementation (page 63)
 	}
 	if (m_dev_phy == VK_NULL_HANDLE)
 	{
-		printf("failed to find a suitable GPU!\n");
+		printf("failed to find a suitable GPU!");
 		return (-1);
 	}
 	return (0);
@@ -158,7 +158,7 @@ void	YaveRenderer::createLogicalDeviceAndQueue()
 
 	if (vkCreateDevice(m_physicalDevice, &createInfo
 		, m_yaveInstanceParams.allocatorCallbacks, &vkContext.device) != VK_SUCCESS
-		throw YaveLib::FatalVulkanInitError("failed to create logical device and queues!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create logical device and queues!");
 
 	vkGetDeviceQueue(vkContext.device, vkContext.graphicsFamilyIdx, 0, &vkContext.graphicsQueue);
 	vkGetDeviceQueue(vkContext.device, vkContext.presentFamilyIdx, 0, &vkContext.presentQueue);
@@ -168,30 +168,30 @@ void	YaveRenderer::createSurface()
 {
 	if (m_surfaceHandler.createSurface(m_instance,
 		m_yaveInstanceParams.allocatorCallbacks, m_viewInfo.surface) != VK_SUCCESS)
-		throw YaveLib::FatalVulkanInitError("failed to create surface!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create surface!");
 }
 
 void	YaveRenderer::createSwapchain()
 {
 	if (m_swapchainHandler.createSwapchain(m_viewInfo) != VK_SUCCESS)
-		throw YaveLib::FatalVulkanInitError("failed to create swapchain!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create swapchain!");
 	vkContext.frameCount = m_viewInfo.frameCount
 }
 
 void	YaveRenderer::createImageViews()
 {
 	if (m_imageViewsHandler.createImageViews(m_viewInfo) != VK_SUCCESS)
-		throw YaveLib::FatalVulkanInitError("failed to create image views!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create image views!");
 }
 
 void	YaveRenderer::createRenderPass()
 {
 	if (m_renderPassHandler.createRenderPass(m_viewInfo) != VK_SUCCESS)
-		throw YaveLib::FatalVulkanInitError("failed to create render pass!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create render pass!");
 }
 
 void	YaveRenderer::createFramebuffers()
 {
 	if (m_framebuffersHandler.createFramebuffers(m_viewInfo) != VK_SUCCESS)
-		throw YaveLib::FatalVulkanInitError("failed to create frame buffers!\n");
+		throw YaveLib::FatalVulkanInitError("failed to create frame buffers!");
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "YaveParams.h"
+#include "../core/YaveParams.h"
 
 class	YaveBasicSwapchainHandler : public YaveSwapchainHandler
 {
