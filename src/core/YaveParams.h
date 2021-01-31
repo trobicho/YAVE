@@ -41,7 +41,7 @@ class	YaveSurfaceHandler
 
 		virtual VkResult	createSurface(VkInstance&, VkSurfaceKHR&) = 0;
 		virtual VkResult	destroySurface(VkSurfaceKHR&);
-}
+};
 
 class	YaveSwapchainHandler
 {
@@ -50,7 +50,7 @@ class	YaveSwapchainHandler
 
 		virtual VkResult	createSwaphain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu) = 0;
 		virtual VkResult	destroySwapchain(YaveViewInfo_t &viewInfo) = 0;
-}
+};
 
 class	YaveImageViewsHandler
 {
@@ -59,7 +59,7 @@ class	YaveImageViewsHandler
 
 		virtual VkResult	createImageViews(YaveViewInfo_t &viewInfo) = 0;
 		virtual VkResult	destroyImageViews(YaveViewInfo_t &viewInfo) = 0;
-}
+};
 
 class	YaveRenderPassHandler
 {
@@ -68,7 +68,7 @@ class	YaveRenderPassHandler
 
 		virtual VkResult	createRenderPass(YaveViewInfo_t &viewInfo) = 0;
 		virtual VkResult	destroyRenderPass(YaveViewInfo_t &viewInfo) = 0;
-}
+};
 
 class	YaveFramebuffersHandler
 {
@@ -77,7 +77,7 @@ class	YaveFramebuffersHandler
 
 		virtual VkResult	createFramebuffers(YaveViewInfo_t &viewInfo) = 0;
 		virtual VkResult	destroyFramebuffers(YaveViewInfo_t &viewInfo) = 0;
-}
+};
 
 /*
 =============

@@ -1,6 +1,6 @@
-#include "YaveRendererHelpers.h"
+#include "YaveRendererHelper.h"
 
-VkShaderModule	YaveRendererHelpers::createShaderModule(std::vector<char> &code)
+VkShaderModule	YaveRendererHelper::createShaderModule(std::vector<char> &code)
 {
 	VkShaderModuleCreateInfo	info{};
 	VkShaderModule				shaderModule;
