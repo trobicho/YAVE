@@ -30,6 +30,7 @@ YaveRenderer::~YaveRenderer()
 
 void	YaveRenderer::cleanup()
 {
+	vkDestroyCommandPool(device, m_commandPool, nullptr);
 	m_renderPassHandler.destroyRenderPass(m_viewInfo);
 	m_swapchainHandler.destroySwapchain(m_viewInfo);
 	m_imageViewHandler.destroyImageView(m_viewInfo);
@@ -44,24 +45,19 @@ void	YaveRenderer::cleanup()
 void	YaveRenderer::init()
 {
 	createInstance();
-
 	//TODO Debug messenger page 55 VkTuto
-
 	createSurface();
-
 	choosePhysicalDevice();
-
 	createLogicalDeviceAndQueue();
-
 	createSwapChain();
-
 	createImageViews();
-
 	createRenderPass();
 
 	createFramebuffers();
+	createCommandPool();
+	createCommandBuffers();
 
-	m_isInit = true;//XXX probably init() in constructor
+	m_isInit = true;//XXX probably init() in constructor, probably not
 }
 
 void	YaveRenderer::createInstance()
@@ -87,8 +83,6 @@ void	YaveRenderer::createInstance()
 
 	if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
 		throw YaveLib::FatalVulkanInitError("failed to create instance!");
-
-	return (0);
 }
 
 void	YaveRenderer::choosePhysicalDevice() //TODO: Implementation (page 63)
@@ -123,7 +117,6 @@ void	YaveRenderer::choosePhysicalDevice() //TODO: Implementation (page 63)
 		printf("failed to find a suitable GPU!");
 		return (-1);
 	}
-	return (0);
 }
 
 void	YaveRenderer::createLogicalDeviceAndQueue()
@@ -163,6 +156,74 @@ void	YaveRenderer::createLogicalDeviceAndQueue()
 	vkGetDeviceQueue(vkContext.device, vkContext.graphicsFamilyIdx, 0, &vkContext.graphicsQueue);
 	vkGetDeviceQueue(vkContext.device, vkContext.presentFamilyIdx, 0, &vkContext.presentQueue);
 }
+
+void	YaveRenderer::createCommandPool()
+{
+	VkCommandPoolCreateInfo		commandPoolCreateInfo = {};
+	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	commandPoolCreateInfo.queueFamilyIndex = vkContext.graphicsFamilyIdx;
+
+	if (vkCreateCommandPool(vkContext.device, &commandPoolCreateInfo
+		, vkContext.allocatorCallbacks, &m_commandPool) != VK_SUCCESS)
+		throw YaveLib::FatalVulkanInitError("failed to create command pool!");
+}
+
+void	YaveRenderer::createCommandBuffers()
+{
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferAllocateInfo.commandPool = m_commandPool;
+	commandBufferAllocateInfo.commandBufferCount = vkContext.frameCount;
+
+	if (vkAllocateCommandBuffers(vkContext.device, &commandBufferAllocateInfo
+		, m_commandBuffers.data()) != VK_SUCCESS)
+		throw YaveLib::FatalVulkanInitError("failed to allocate command buffer!");
+
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+	for (int i = 0; i < vkContext.frameCount; ++i)
+	{
+		if (vkCreateFence(vkContext.device, &fenceCreateInfo
+			, vkContext.allocatorCallbacks, &m_commandBufferFences[ i ]) != VK_SUCCESS)
+			throw YaveLib::FatalVulkanInitError("failed to allocate command buffer fences!");
+	}
+}
+
+void	YaveRenderer::createSemaphores()
+{
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	for (int i = 0; i < vkContext.frameCount; ++i)
+	{
+		if (vkCreateSemaphore(vkContext.device, &semaphoreCreateInfo
+			, vkContext.allocatorCallbacks, &m_acquireSemaphores[i]) != VK_SUCCESS)
+			throw YaveLib::FatalVulkanInitError("failed to creates semaphores!");
+		if (vkCreateSemaphore(vkContext.device, &semaphoreCreateInfo
+			, vkContext.allocatorCallbacks, &m_renderCompleteSemaphores[i]) != VK_SUCCESS)
+			throw YaveLib::FatalVulkanInitError("failed to creates semaphores!");
+	}
+}
+
+/*
+void YaveRenderer::CreateQueryPool()
+{
+	VkQueryPoolCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+	createInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
+	createInfo.queryCount = NUM_TIMESTAMP_QUERIES;
+
+	for (int i = 0; i < vkContext.frameCount; ++i)
+	{
+		if (vkCreateQueryPool( vkContext.device, &createInfo
+			, vkContext.allocatorCallbacks, &m_queryPools[i]) != VK_SUCCESS)
+			throw YaveLib::FatalVulkanInitError("failed to creates query pools!");
+	}
+}
+*/
 
 void	YaveRenderer::createSurface()
 {
