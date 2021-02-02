@@ -30,14 +30,14 @@ YaveRenderer::~YaveRenderer()
 
 void	YaveRenderer::cleanup()
 {
-	vkDestroyCommandPool(device, m_commandPool, nullptr);
+	vkDestroyCommandPool(device, m_commandPool, vkContext.allocatorCallbacks);
 	m_renderPassHandler.destroyRenderPass(m_viewInfo);
 	m_swapchainHandler.destroySwapchain(m_viewInfo);
 	m_imageViewHandler.destroyImageView(m_viewInfo);
 	m_frambuffersHandler.destroyFrameBuffer(m_viewInfo);
-	m_surfaceHandler.destroySurface(m_viewInfo.surface);
+	vkDestroySurfaceKHR(m_instance, m_viewInfo.surface, vkContext.allocatorCallbacks);
 	vkDestroyInstance(m_instance);
-	vkDestroyDevice(vkContext.device, m_yaveInstanceParams.allocatorCallbacks);
+	vkDestroyDevice(vkContext.device, vkContext.allocatorCallbacks);
 
 	m_isInit = false;
 }
@@ -58,6 +58,42 @@ void	YaveRenderer::init()
 	createCommandBuffers();
 
 	m_isInit = true;//XXX probably init() in constructor, probably not
+}
+
+void	YaveRenderer::commandBufferRecord()
+{
+	VkClearValue			clearColor = (VkClearValue){0.0f, 0.0f, 0.0f, 1.0f};
+	VkRenderPassBeginInfo	renderPassInfo;
+
+	for (size_t i = 0; i < m_commandBuffers.size(); i++)
+	{
+		VkCommandBufferBeginInfo	beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0; // Optional
+		beginInfo.pInheritanceInfo = nullptr; // Optional
+		if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS)
+			throw YaveLib::YaveRendererError("failed to begin recording command buffer!");
+		renderPassInfo = (VkRenderPassBeginInfo){};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = vkContext.renderPass;
+		renderPassInfo.framebuffer = m_viewInfo.framebuffer[i];
+		renderPassInfo.renderArea.offset = (VkOffset2D){0, 0};
+		renderPassInfo.renderArea.extent = m_viewInfo.swapchainExtent;
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
+
+		auto	&renderProg = renderProgManager.getCurrentRenderProg();
+		vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo
+			, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(m_command_buffer[i]
+			, VK_PIPELINE_BIND_POINT_GRAPHICS, renderProg.pipelines[0]);
+
+		vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+
+		vkCmdEndRenderPass(m_commandBuffers[i]);
+		if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
+			throw YaveLib::YaveRendererError("failed to record command buffer!");
+	}
 }
 
 void	YaveRenderer::createInstance()

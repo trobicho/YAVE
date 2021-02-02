@@ -25,6 +25,8 @@ class YaveRenderer
 		void	createRenderPass();
 		void	createFramebuffers();
 
+		void	commandBufferRecord();
+
 	private:
 		//InstanceParams has to be still valid for a least the init() call
 		bool					m_isInit = false; //XXX probably init() in constructor

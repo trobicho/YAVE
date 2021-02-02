@@ -16,6 +16,9 @@ struct	renderProg_t
 		uint64_t	stateBits;
 		VkPipeline	pipeline;
 	}
+
+	std::vector<pipelineState_t>	pipelines;
+	VkPipelineLayout				pipelineLayout;
 };
 
 class	YaveRenderProgManager

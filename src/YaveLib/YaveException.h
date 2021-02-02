@@ -18,6 +18,13 @@ namespace	YaveLib
   			explicit	FatalVulkanInitError(const char* what_arg);
 	};
 
+	class	YaveRendererError: public exception
+	{
+		public:
+  			explicit	YaveRendererError(const string& what_arg);
+  			explicit	YaveRendererError(const char* what_arg);
+	};
+
 	class	YaveInvalidInstanceParam: public exception
 	{
 		public:

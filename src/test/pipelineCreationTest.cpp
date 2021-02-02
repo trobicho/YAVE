@@ -91,7 +91,7 @@ static VkPipelineColorBlendStateCreateInfo		colorBlendStateInfo_noBlending()
 
 //-----------------------------------------
 
-VkPipeline  BasicPipelineTest::createGraphicsPipeline(vkPipelineLayout &pipelineLayout)
+VkPipeline  BasicPipelineTest::createGraphicsPipeline(VkPipelineLayout &pipelineLayout)
 {
 	VkShaderModule	vertShaderModule = YaveRendererHelper::createShaderModule("../../test.vert");
 	VkShaderModule	fragShaderModule = YaveRendererHelper::createShaderModule("../../test.frag");
@@ -160,7 +160,7 @@ VkPipeline  BasicPipelineTest::createGraphicsPipeline(vkPipelineLayout &pipeline
 }
 
 void  BasicPipelineTest::destroyPipeline(VkPipeline  &pipeline
-		, vkPipelineLayout &pipelineLayout);
+		, VkPipelineLayout &pipelineLayout);
 {
 	vkDestroyPipeline(device, pipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);

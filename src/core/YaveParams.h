@@ -40,7 +40,6 @@ class	YaveSurfaceHandler
 		virtual	YaveSurfaceHandler() = 0;
 
 		virtual VkResult	createSurface(VkInstance&, VkSurfaceKHR&) = 0;
-		virtual VkResult	destroySurface(VkSurfaceKHR&);
 };
 
 class	YaveSwapchainHandler

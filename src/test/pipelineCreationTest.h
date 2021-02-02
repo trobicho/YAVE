@@ -3,7 +3,7 @@
 
 namespace	BasicPipelineTest
 {
-	VkPipeline  createGraphicsPipeline(vkPipelineLayout &pipelineLayout);
+	VkPipeline  createGraphicsPipeline(VkPipelineLayout &pipelineLayout);
 	void        destroyPipeline(VkPipeline  &graphicsPipeline
-					, vkPipelineLayout &pipelineLayout);
+					, VkPipelineLayout &pipelineLayout);
 };
