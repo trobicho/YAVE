@@ -30,7 +30,12 @@ YaveRenderer::~YaveRenderer()
 
 void	YaveRenderer::cleanup()
 {
-	vkDestroyCommandPool(device, m_commandPool, vkContext.allocatorCallbacks);
+	for (int i = 0; i < m_frameCount; ++i)
+	{
+		vkDestroyFence(vkContext.device, m_commandBufferFences[i]
+			, vkContext.allocatorCallbacks);
+	}
+	vkDestroyCommandPool(vkContext.device, m_commandPool, vkContext.allocatorCallbacks);
 	m_renderPassHandler.destroyRenderPass(m_viewInfo);
 	m_swapchainHandler.destroySwapchain(m_viewInfo);
 	m_imageViewHandler.destroyImageView(m_viewInfo);
@@ -58,6 +63,50 @@ void	YaveRenderer::init()
 	createCommandBuffers();
 
 	m_isInit = true;//XXX probably init() in constructor, probably not
+}
+
+void	YaveRenderer::drawFrame()
+{
+	uint32_t			imageIndex;
+	VkCommandBuffer		commandBuffer = m_commandBuffer[m_currentFrameData];
+
+	vkAcquireNextImageKHR(device, swapChain, UINT64_MAX
+		, m_acquireSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+	VkSubmitInfo	submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore waitSemaphores[] = {m_acquireSemaphores[m_currentFrame]};
+	VkPipelineStageFlags waitStages[] =
+		{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+	VkSemaphore signalSemaphores[] = {m_renderCompleteSemaphores};
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+	if (vkQueueSubmit(vkContext.graphicsQueue, 1, &submitInfo
+		, m_commandBufferFences[m_currentFrame]) != VK_SUCCESS)
+	{
+ 		throw YaveLib::YaveRendererError("failed to submit draw command buffer!");
+	}
+
+	VkPresentInfoKHR	presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = m_renderCompleteSemaphores;
+	VkSwapchainKHR	swapChains[] = {m_viewInfo.swapchain};
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pResults = nullptr;
+	vkQueuePresentKHR(vkContext.presentQueue, &presentInfo);
+
+	m_counterFrame++:
+	m_currentFrame = m_counterFrame % m_frameCount;
 }
 
 void	YaveRenderer::commandBufferRecord()

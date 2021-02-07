@@ -10,6 +10,7 @@ class YaveRenderer
 
 		void	init();
 		void	cleanup();
+		void	drawFrame();
 
 	private:
 		void	createInstance();
@@ -31,6 +32,8 @@ class YaveRenderer
 		//InstanceParams has to be still valid for a least the init() call
 		bool					m_isInit = false; //XXX probably init() in constructor
 		uint32_t				m_frameCount;
+		uint32_t				m_currentFrame = 0;
+		uint32_t				m_counterFrame = 0;
 		YaveInstanceParams_t	&m_yaveInstanceParams 
 
 		YaveSurfaceHandler		&m_surfaceHandler;

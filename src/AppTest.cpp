@@ -55,5 +55,6 @@ void	AppTest::main_loop()
 	while (!glfwWindowShouldClose(m_window))
 	{
 		glfwPollEvents();
+		m_renderer.drawFrame();
 	}
 }
