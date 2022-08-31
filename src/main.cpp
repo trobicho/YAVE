@@ -5,8 +5,8 @@
 
 int main(int ac, char **av)
 {
-	AppTest	app(800, 600);
+  AppTest app(800, 600);
 
-	app.run();
-	return (EXIT_SUCCESS);
+  app.run();
+  return (EXIT_SUCCESS);
 }

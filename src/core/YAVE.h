@@ -1,2 +1,2 @@
-#include "yaveContext.h"
-#include "Renderer.h"
+#include "core/YaveContext.h"
+#include "core/YaveRenderer.h"

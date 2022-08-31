@@ -4,9 +4,9 @@
 
 VKResult	YaveBasicSwapchainHandler::createSwapchain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu)
 {
-	VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormat(gpu.surfaceFormats);
-	VkPresentModeKHR presentMode = choosePresentMode(gpu.presentModes);
-	VkExtent2D surfaceExtent = chooseSurfaceExtent(gpu.surfaceCaps, viewInfo.winExtent);
+	VkSurfaceFormatKHR	surfaceFormat = chooseSurfaceFormat(gpu.surfaceFormats);
+	VkPresentModeKHR		presentMode = choosePresentMode(gpu.presentModes);
+	VkExtent2D 					surfaceExtent = chooseSurfaceExtent(gpu.surfaceCaps, viewInfo.winExtent);
 
 	uint32_t imageCount = detail.capability.minImageCount + 1;
 	if (gpu.surfaceCaps.maxImageCount > 0 && m_frameCount > gpu.surfaceCaps.maxImageCount)

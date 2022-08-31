@@ -5,15 +5,15 @@
 
 struct	gpuInfo_t
 {
-  VkPhysicalDevice						device;
-  VkPhysicalDeviceProperties			props;
-  VkPhysicalDeviceMemoryProperties		memProps;
-  VkPhysicalDeviceFeatures				features;
-  VkSurfaceCapabilitiesKHR				surfaceCaps;
-  std::vector<VkSurfaceFormatKHR>		surfaceFormats;
-  std::vector<VkPresentModeKHR>			presentModes;
+  VkPhysicalDevice											device;
+  VkPhysicalDeviceProperties						props;
+  VkPhysicalDeviceMemoryProperties			memProps;
+  VkPhysicalDeviceFeatures							features;
+  VkSurfaceCapabilitiesKHR							surfaceCaps;
+  std::vector<VkSurfaceFormatKHR>				surfaceFormats;
+  std::vector<VkPresentModeKHR>					presentModes;
   std::vector<VkQueueFamilyProperties>	queueFamilyProps;
-  std::vector<VkExtensionProperties>	extensionProps;
+  std::vector<VkExtensionProperties>		extensionProps;
 };
 
 struct	vulkanContext_t
