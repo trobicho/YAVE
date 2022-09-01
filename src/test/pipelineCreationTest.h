@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 
-namespace	BasicPipelineTest
+namespace   BasicPipelineTest
 {
-	VkPipeline  createGraphicsPipeline(VkPipelineLayout &pipelineLayout);
-	void        destroyPipeline(VkPipeline  &graphicsPipeline
-					, VkPipelineLayout &pipelineLayout);
+  VkPipeline  createGraphicsPipeline(VkPipelineLayout &pipelineLayout);
+  void        destroyPipeline(VkPipeline  &graphicsPipeline
+                , VkPipelineLayout &pipelineLayout);
 };

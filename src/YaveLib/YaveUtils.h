@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-namespace	YaveLib
+namespace   YaveLib
 {
-	std::vector<char>	readBinaryFile(const std::string &filename);
+  std::vector<char>   readBinaryFile(const std::string &filename);
 };

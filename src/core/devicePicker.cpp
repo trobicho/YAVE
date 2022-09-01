@@ -1,6 +1,6 @@
 #include "YaveContext.h"
 #include <vector>
 
-int		DevicePicker::rateDevice(gpuInfo_t &gpu) //TODO: Implemetation
+int DevicePicker::rateDevice(gpuInfo_t &gpu) //TODO: Implemetation
 {
 }

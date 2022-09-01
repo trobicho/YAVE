@@ -5,41 +5,41 @@
 
 struct	gpuInfo_t
 {
-  VkPhysicalDevice											device;
-  VkPhysicalDeviceProperties						props;
-  VkPhysicalDeviceMemoryProperties			memProps;
-  VkPhysicalDeviceFeatures							features;
-  VkSurfaceCapabilitiesKHR							surfaceCaps;
-  std::vector<VkSurfaceFormatKHR>				surfaceFormats;
-  std::vector<VkPresentModeKHR>					presentModes;
+  VkPhysicalDevice                      device;
+  VkPhysicalDeviceProperties            props;
+  VkPhysicalDeviceMemoryProperties      memProps;
+  VkPhysicalDeviceFeatures              features;
+  VkSurfaceCapabilitiesKHR		surfaceCaps;
+  std::vector<VkSurfaceFormatKHR>	surfaceFormats;
+  std::vector<VkPresentModeKHR>		presentModes;
   std::vector<VkQueueFamilyProperties>	queueFamilyProps;
-  std::vector<VkExtensionProperties>		extensionProps;
+  std::vector<VkExtensionProperties>	extensionProps;
 };
 
 struct	vulkanContext_t
 {
-	gpuInfo_t				gpu;
+  gpuInfo_t		gpu;
 
-	VkDevice				device;
-	int						graphicsFamilyIdx;
-	int						presentFamilyIdx;
-	VkQueue					graphicsQueue;
-	VkQueue					presentQueue;
+  VkDevice		device;
+  int			graphicsFamilyIdx;
+  int			presentFamilyIdx;
+  VkQueue		graphicsQueue;
+  VkQueue		presentQueue;
 
-	VkRenderPass			renderPass;
-	VkPipelineCache			pipelineCache;
+  VkRenderPass		renderPass;
+  VkPipelineCache	pipelineCache;
 
-	VkAllocationCallbacks	*allocatorCallbacks = nullptr;
-	uint32_t				frameCount;
+  VkAllocationCallbacks *allocatorCallbacks = nullptr;
+  uint32_t		frameCount;
 };
 
 extern vulkanContext_t	vkContext;
 
 class	DevicePicker
 {
-	public:
-		virtual int&	rateDevice(gpuInfo_t &gpu);
+  public:
+    virtual int&  rateDevice(gpuInfo_t &gpu);
 
-	private:
-		DevicePicker(){};
+  private:
+    DevicePicker(){};
 }
