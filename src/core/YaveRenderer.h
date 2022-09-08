@@ -12,9 +12,12 @@ class YaveRenderer
     void  cleanup();
     void  drawFrame();
 
+    VkInstance&   getInstance() {return (m_instance);}
+    VkSurfaceKHR& getSurfaceKHR() {return (m_viewInfo.surface);}
+
   private:
     void  createInstance();
-    void  hoosePhysicalDevice();
+    void  choosePhysicalDevice();
     void  createLogicalDeviceAndQueue();
     void  createCommandPool();
     void  createCommandBuffers();
@@ -36,19 +39,13 @@ class YaveRenderer
     uint32_t              m_counterFrame = 0;
     YaveInstanceParams_t  &m_yaveInstanceParams;
 
-    YaveSurfaceHandler      &m_surfaceHandler;
-    YaveSwapchainHandler    &m_swapChainHandler;
-    YaveImageViewsHandler   &m_imageViewsHandler;
-    YaveRenderPassHandler   &m_renderPassHandler;
-    YaveFramebuffersHandler &m_framebuffersHandler;
-
     YaveViewInfo_t                m_viewInfo;
 
     VkInstance                    m_instance;
     VkPhysicalDevice              m_physicalDevice;
     VkCommandPool                 m_commandPool;
     std::vector<VkCommandBuffer>  m_commandBuffers;
-    std::vector<VkFences>         m_commandBufferFences;
+    std::vector<VkFence>          m_commandBufferFences;
     std::vector<VkSemaphore>      m_acquireSemaphores;
     std::vector<VkSemaphore>      m_renderCompleteSemaphores;
 };

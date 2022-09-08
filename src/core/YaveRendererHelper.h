@@ -1,10 +1,12 @@
 #pragma once
 #include "../YaveLib/YaveUtils.h"
+#include "../YaveLib/YaveException.h"
+#include <vulkan/vulkan.h>
 
 namespace   YaveRendererHelper
 {
-  VkShaderModule  createShaderModule(const std::string &filename) {
-    return (createShaderModule(YaveLib::readBinaryFile(filename)));
+  VkShaderModule  createShaderModuleFromCode(std::vector<char> code);
+  VkShaderModule  createShaderModuleFromFile(const std::string &filename) {
+    return (createShaderModuleFromCode(YaveLib::readBinaryFile(filename)));
   }
-  VkShaderModule  createShaderModule(std::vector<char> &code);
 }

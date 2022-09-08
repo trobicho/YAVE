@@ -1,16 +1,19 @@
 #include "YaveBasicHandler.h"
+#include "../YaveLib/YaveUtils.h"
+#include <array>
 
 //-------------------Swapchain------------------
 
-VKResult  YaveBasicSwapchainHandler::createSwapchain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu)
+VkResult  YaveBasicSwapchainHandler::createSwapchain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu)
 {
   VkSurfaceFormatKHR  surfaceFormat = chooseSurfaceFormat(gpu.surfaceFormats);
   VkPresentModeKHR    presentMode = choosePresentMode(gpu.presentModes);
   VkExtent2D          surfaceExtent = chooseSurfaceExtent(gpu.surfaceCaps, viewInfo.winExtent);
 
-  uint32_t imageCount = detail.capability.minImageCount + 1;
+  uint32_t imageCount = gpu.surfaceCaps.minImageCount + 1;
+
   if (gpu.surfaceCaps.maxImageCount > 0 && m_frameCount > gpu.surfaceCaps.maxImageCount)
-    m_frameCount = detail.capability.maxImageCount;
+    m_frameCount = gpu.surfaceCaps.maxImageCount;
   viewInfo.frameCount = m_frameCount;
 
   VkSwapchainCreateInfoKHR info = {};
@@ -21,7 +24,7 @@ VKResult  YaveBasicSwapchainHandler::createSwapchain(YaveViewInfo_t &viewInfo, g
   info.imageColorSpace = surfaceFormat.colorSpace;
   info.imageExtent = surfaceExtent;
   info.imageArrayLayers = 1;
-  info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+  info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
   if (vkContext.graphicsFamilyIdx != vkContext.presentFamilyIdx)
   {
     uint32_t indices[] = {(uint32_t)vkContext.graphicsFamilyIdx
@@ -60,7 +63,7 @@ VKResult  YaveBasicSwapchainHandler::createSwapchain(YaveViewInfo_t &viewInfo, g
 
 VkResult    YaveBasicSwapchainHandler::destroySwapchain(YaveViewInfo_t &viewInfo)
 {
-  vkDestroySwapchainKHR(vkContext.device, viewInfo.swapChain, vkContext.allocatorCallbacks);
+  vkDestroySwapchainKHR(vkContext.device, viewInfo.swapchain, vkContext.allocatorCallbacks);
   return (VK_SUCCESS);
 }
 
@@ -96,7 +99,7 @@ VkPresentModeKHR	YaveBasicSwapchainHandler::choosePresentMode(
 
 #include <algorithm>
 
-VkPresentModeKHR	YaveBasicSwapchainHandler::chooseSurfaceExtent(
+VkExtent2D              YaveBasicSwapchainHandler::chooseSurfaceExtent(
     VkSurfaceCapabilitiesKHR &caps, VkExtent2D winExtent)
 {
   VkExtent2D	extent;
@@ -104,7 +107,7 @@ VkPresentModeKHR	YaveBasicSwapchainHandler::chooseSurfaceExtent(
   if (caps.currentExtent.width == -1)
   {
     extent.width = std::max(caps.minImageExtent.width
-        , std::min(caps.maxImageExtent.witdh, winExtent.width));
+        , std::min(caps.maxImageExtent.width, winExtent.width));
     extent.height = std::max(caps.minImageExtent.height
         , std::min(caps.maxImageExtent.height, winExtent.height));
     return (extent);
@@ -142,7 +145,7 @@ VkResult    YaveBasicImageViewsHandler::createImageViews(YaveViewInfo_t &viewInf
   return (VK_SUCCESS);
 }
 
-VkResult    YaveBasicImageViewHandler::destroyImageViews(YaveViewInfo_t &viewInfo)
+VkResult    YaveBasicImageViewsHandler::destroyImageViews(YaveViewInfo_t &viewInfo)
 {
   for (auto &imageView: viewInfo.imageViews)
   {
@@ -187,13 +190,9 @@ VkResult    YaveBasicRenderPassHandler::createRenderPass(YaveViewInfo_t &viewInf
   subpassDep.srcAccessMask = 0;
   subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-    | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-  std::array<VkAttachmentDescription, 1> attachments =
-  {colorAttachment};
-
-  std::array<VkAttachmentDescription, 1> attachments =
-  {colorAttachment};
+  std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
 
   info.dependencyCount = 1;
   info.pDependencies = &subpassDep;
@@ -211,7 +210,8 @@ VkResult    YaveBasicRenderPassHandler::createRenderPass(YaveViewInfo_t &viewInf
 
 VkResult    YaveBasicRenderPassHandler::destroyRenderPass(YaveViewInfo_t &viewInfo)
 {
-  vkDestroyRenderPass(vkContext.device, vkContext.renderPass);
+  vkDestroyRenderPass(vkContext.device
+      , vkContext.renderPass, vkContext.allocatorCallbacks);
   return (VK_SUCCESS);
 }
 
@@ -220,19 +220,20 @@ VkResult    YaveBasicRenderPassHandler::destroyRenderPass(YaveViewInfo_t &viewIn
 VkResult    YaveBasicFramebuffersHandler::createFramebuffers(YaveViewInfo_t &viewInfo)
 {
   viewInfo.framebuffers.resize(viewInfo.imageViews.size());
-  for (int i = 0; i < viewInfo.imageViews[i]; ++i)
+  for (int i = 0; i < viewInfo.imageViews.size(); ++i)
   {
-    VkFramebufferCreateInfo   info = {};
+    VkFramebufferCreateInfo   framebuffer_info = {};
     std::array<VkImageView, 1> attachments = {viewInfo.imageViews[i]};
+
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_info.renderPass = m_render_pass;
+    framebuffer_info.renderPass = vkContext.renderPass;
     framebuffer_info.attachmentCount = static_cast<uint32_t>(attachments.size());
     framebuffer_info.pAttachments = attachments.data();
     framebuffer_info.width = viewInfo.swapchainExtent.width;
     framebuffer_info.height = viewInfo.swapchainExtent.height;
     framebuffer_info.layers = 1;
-    if (vkCreateFramebuffer(m_device, &framebuffer_info, NULL
-        , &m_framebuffer[i]) != VK_SUCCESS)
+    if (vkCreateFramebuffer(vkContext.device, &framebuffer_info, NULL
+        , &viewInfo.framebuffers[i]) != VK_SUCCESS)
       throw YaveLib::YaveHandlerError("failed to create framebuffers!");
   }
   return (VK_SUCCESS);

@@ -1,11 +1,12 @@
 #include "YaveRenderer.h"
 #include "YaveParams.h"
-#include "YaveParamsValidator.h"
+#include "YaveRenderProgs.h"
 #include "../YaveLib/YaveException.h"
 #include <vector>
+#include <map>
 
 YaveRenderer::YaveRenderer(YaveInstanceParams_t &yaveInstanceParams):
-  m_yaveInstanceParams(yaveInstanceParams);
+  m_yaveInstanceParams(yaveInstanceParams)
 {
   YaveParamsValidator::instanceParamsChecker(m_yaveInstanceParams);
   YaveParamsValidator::validationLayersCheck(
@@ -15,10 +16,6 @@ YaveRenderer::YaveRenderer(YaveInstanceParams_t &yaveInstanceParams):
     m_yaveInstanceParams.instanceExtensions
   );
 
-  m_surfaceHandler = m_yaveInstanceParams.surfaceHandler;
-  m_swapchainHandler = m_yaveInstanceParams.swapchainHandler;
-  m_renderPassHandler = m_yaveInstanceParams.renderPassHandler;
-  m_framebuffersHandler = m_yaveInstanceParams.framebuffersHandler;
   m_viewInfo.winExtent = m_yaveInstanceParams.windowExtent;
 }
 
@@ -36,12 +33,12 @@ void	YaveRenderer::cleanup()
       , vkContext.allocatorCallbacks);
   }
   vkDestroyCommandPool(vkContext.device, m_commandPool, vkContext.allocatorCallbacks);
-  m_renderPassHandler.destroyRenderPass(m_viewInfo);
-  m_swapchainHandler.destroySwapchain(m_viewInfo);
-  m_imageViewHandler.destroyImageView(m_viewInfo);
-  m_frambuffersHandler.destroyFrameBuffer(m_viewInfo);
+  m_yaveInstanceParams.renderPassHandler->destroyRenderPass(m_viewInfo);
+  m_yaveInstanceParams.swapchainHandler->destroySwapchain(m_viewInfo);
+  m_yaveInstanceParams.imageViewHandler->destroyImageViews(m_viewInfo);
+  m_yaveInstanceParams.framebuffersHandler->destroyFramebuffers(m_viewInfo);
   vkDestroySurfaceKHR(m_instance, m_viewInfo.surface, vkContext.allocatorCallbacks);
-  vkDestroyInstance(m_instance);
+  vkDestroyInstance(m_instance, vkContext.allocatorCallbacks);
   vkDestroyDevice(vkContext.device, vkContext.allocatorCallbacks);
 
   m_isInit = false;
@@ -54,8 +51,8 @@ void	YaveRenderer::init()
   createSurface();
   choosePhysicalDevice();
   createLogicalDeviceAndQueue();
-  createSwapChain();
-  createImageViews();
+  createSwapchain();
+  createImageView();
   createRenderPass();
 
   createFramebuffers();
@@ -68,9 +65,9 @@ void	YaveRenderer::init()
 void	YaveRenderer::drawFrame()
 {
   uint32_t          imageIndex;
-  VkCommandBuffer   commandBuffer = m_commandBuffer[m_currentFrameData];
+  VkCommandBuffer   commandBuffer = m_commandBuffers[m_currentFrame];
 
-  vkAcquireNextImageKHR(device, swapChain, UINT64_MAX
+  vkAcquireNextImageKHR(vkContext.device, m_viewInfo.swapchain, UINT64_MAX
       , m_acquireSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
   VkSubmitInfo	submitInfo{};
@@ -85,12 +82,11 @@ void	YaveRenderer::drawFrame()
   submitInfo.pWaitDstStageMask = waitStages;
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &commandBuffer;
-  VkSemaphore signalSemaphores[] = {m_renderCompleteSemaphores};
   submitInfo.signalSemaphoreCount = 1;
-  submitInfo.pSignalSemaphores = signalSemaphores;
+  submitInfo.pSignalSemaphores = m_renderCompleteSemaphores.data();
 
   if (vkQueueSubmit(vkContext.graphicsQueue, 1, &submitInfo
-        , m_commandBufferFences[m_currentFrame]) != VK_SUCCESS)
+      , m_commandBufferFences[m_currentFrame]) != VK_SUCCESS)
   {
     throw YaveLib::YaveRendererError("failed to submit draw command buffer!");
   }
@@ -98,7 +94,7 @@ void	YaveRenderer::drawFrame()
   VkPresentInfoKHR	presentInfo = {};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   presentInfo.waitSemaphoreCount = 1;
-  presentInfo.pWaitSemaphores = m_renderCompleteSemaphores;
+  presentInfo.pWaitSemaphores = m_renderCompleteSemaphores.data();
   VkSwapchainKHR	swapChains[] = {m_viewInfo.swapchain};
   presentInfo.swapchainCount = 1;
   presentInfo.pSwapchains = swapChains;
@@ -106,13 +102,13 @@ void	YaveRenderer::drawFrame()
   presentInfo.pResults = nullptr;
   vkQueuePresentKHR(vkContext.presentQueue, &presentInfo);
 
-  m_counterFrame++:
-    m_currentFrame = m_counterFrame % m_frameCount;
+  m_counterFrame++;
+  m_currentFrame = m_counterFrame % m_frameCount;
 }
 
 void	YaveRenderer::commandBufferRecord()
 {
-  VkClearValue			clearColor = (VkClearValue){0.0f, 0.0f, 0.0f, 1.0f};
+  VkClearValue          clearColor = (VkClearValue){0.0f, 0.0f, 0.0f, 1.0f};
   VkRenderPassBeginInfo	renderPassInfo;
 
   for (size_t i = 0; i < m_commandBuffers.size(); i++)
@@ -126,7 +122,7 @@ void	YaveRenderer::commandBufferRecord()
     renderPassInfo = (VkRenderPassBeginInfo){};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = vkContext.renderPass;
-    renderPassInfo.framebuffer = m_viewInfo.framebuffer[i];
+    renderPassInfo.framebuffer = m_viewInfo.framebuffers[i];
     renderPassInfo.renderArea.offset = (VkOffset2D){0, 0};
     renderPassInfo.renderArea.extent = m_viewInfo.swapchainExtent;
     renderPassInfo.clearValueCount = 1;
@@ -135,8 +131,8 @@ void	YaveRenderer::commandBufferRecord()
     auto	&renderProg = renderProgManager.getCurrentRenderProg();
     vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo
         , VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(m_command_buffer[i]
-        , VK_PIPELINE_BIND_POINT_GRAPHICS, renderProg.pipelines[0]);
+    vkCmdBindPipeline(m_commandBuffers[i]
+        , VK_PIPELINE_BIND_POINT_GRAPHICS, renderProg.pipelines[0].pipeline);
 
     vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
 
@@ -160,11 +156,11 @@ void	YaveRenderer::createInstance()
   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   createInfo.pApplicationInfo = &appInfo;
 
-  createInfo.enabledExtensionCount = static_cast<uint32_t>
-    m_yaveInstanceParams.instanceExtensions.size()
+  createInfo.enabledExtensionCount = static_cast<uint32_t>(
+      m_yaveInstanceParams.instanceExtensions.size());
   createInfo.ppEnabledExtensionNames = m_yaveInstanceParams.instanceExtensions.data();
-  createInfo.enabledLayerCount = static_cast<uint32_t>
-    m_yaveInstanceParams.validationLayers.size();
+  createInfo.enabledLayerCount = static_cast<uint32_t>(
+    m_yaveInstanceParams.validationLayers.size());
   createInfo.ppEnabledLayerNames = m_yaveInstanceParams.validationLayers.data();
 
   if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
@@ -184,26 +180,23 @@ void	YaveRenderer::choosePhysicalDevice() //TODO: Implementation (page 63)
   std::multimap<int, gpuInfo_t>	gpuCanditates;
   std::vector<VkPhysicalDevice>	devices(deviceCount);
 
-  vkEnumeratePhysicalDevices(m_instance, &device_count, devices.data());
-  if (device_count == 0)
+  vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
+  if (deviceCount == 0)
     YaveLib::FatalVulkanInitError("failed to find GPU with Vulkan support!");
 
   for (i = 0; i < deviceCount; ++i)
   {
   }
 
-  m_dev_phy = VK_NULL_HANDLE;
-  while (i < device_count && m_dev_phy == NULL)
+  m_physicalDevice = VK_NULL_HANDLE;
+  while (i < deviceCount && m_physicalDevice == NULL)
   {
-    if(is_device_suitable(device[i], m_viewInfo.surface))
-      m_dev_phy = device[i];
+    //if (is_device_suitable(device[i], m_viewInfo.surface))//TODO: virtual for outside lib definition
+      m_physicalDevice = device[i];
     i++;
   }
-  if (m_dev_phy == VK_NULL_HANDLE)
-  {
-    printf("failed to find a suitable GPU!");
-    return (-1);
-  }
+  if (m_physicalDevice == VK_NULL_HANDLE)
+    YaveLib::FatalVulkanInitError("failed to find suitable GPU!");
 }
 
 void	YaveRenderer::createLogicalDeviceAndQueue()
@@ -218,30 +211,32 @@ void	YaveRenderer::createLogicalDeviceAndQueue()
   {
     VkDeviceQueueCreateInfo	qInfo = {};
     qInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    qInfo.FamilyIndex = queueIdx[i];
+    qInfo.queueFamilyIndex = queueIdx[i];
     qInfo.queueCount = 1;
     qInfo.pQueuePriorities = &priority;
-    devqInfo.push_back(qInfo);
+    queueInfo.push_back(qInfo);
   }
 
   VkDeviceCreateInfo	createInfo;
   createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  createInfo.queueCreateInfoCount = devqInfo.size();
-  createInfo.pQueueCreateInfos = devqInfo.data();
-  createInfo.pEnabledFeatures = m_yaveInstanceParams.deviceFeatures;
-  createInfo.enabledExtensionCount = static_cast<uint32_t>
-    m_yaveInstanceParams.deviceExtensions.size();
-  createInfo.ppEnabledExtensionCount = m_yaveInstanceParams.deviceExtensions.data();
-  createInfo.enabledLayerCount = static_cast<uint32_t>
-    m_yaveInstanceParams.validationLayers.size();
-  createInfo.enabledLayerCount = m_yaveInstanceParams.validationLayers.data();
+  createInfo.queueCreateInfoCount = queueInfo.size();
+  createInfo.pQueueCreateInfos = queueInfo.data();
+  createInfo.pEnabledFeatures = m_yaveInstanceParams.deviceFeatures.data();
+  createInfo.enabledExtensionCount = static_cast<uint32_t>(
+    m_yaveInstanceParams.deviceExtensions.size());
+  createInfo.ppEnabledExtensionNames = m_yaveInstanceParams.deviceExtensions.data();
+  createInfo.enabledLayerCount = static_cast<uint32_t>(
+    m_yaveInstanceParams.validationLayers.size());
+  createInfo.ppEnabledLayerNames = m_yaveInstanceParams.validationLayers.data();
 
   if (vkCreateDevice(m_physicalDevice, &createInfo
-        , m_yaveInstanceParams.allocatorCallbacks, &vkContext.device) != VK_SUCCESS
+        , m_yaveInstanceParams.allocatorCallbacks, &vkContext.device) != VK_SUCCESS)
     throw YaveLib::FatalVulkanInitError("failed to create logical device and queues!");
 
-  vkGetDeviceQueue(vkContext.device, vkContext.graphicsFamilyIdx, 0, &vkContext.graphicsQueue);
-  vkGetDeviceQueue(vkContext.device, vkContext.presentFamilyIdx, 0, &vkContext.presentQueue);
+  vkGetDeviceQueue(vkContext.device, vkContext.graphicsFamilyIdx
+    , 0, &vkContext.graphicsQueue);
+  vkGetDeviceQueue(vkContext.device, vkContext.presentFamilyIdx
+    , 0, &vkContext.presentQueue);
 }
 
 void	YaveRenderer::createCommandPool()
@@ -296,50 +291,50 @@ void	YaveRenderer::createSemaphores()
 }
 
 /*
-   void YaveRenderer::CreateQueryPool()
-   {
-   VkQueryPoolCreateInfo createInfo = {};
-   createInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
-   createInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
-   createInfo.queryCount = NUM_TIMESTAMP_QUERIES;
+void YaveRenderer::CreateQueryPool()
+{
+  VkQueryPoolCreateInfo createInfo = {};
+  createInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+  createInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
+  createInfo.queryCount = NUM_TIMESTAMP_QUERIES;
 
-   for (int i = 0; i < vkContext.frameCount; ++i)
-   {
-   if (vkCreateQueryPool( vkContext.device, &createInfo
-   , vkContext.allocatorCallbacks, &m_queryPools[i]) != VK_SUCCESS)
-   throw YaveLib::FatalVulkanInitError("failed to creates query pools!");
-   }
-   }
-   */
+  for (int i = 0; i < vkContext.frameCount; ++i)
+  {
+  if (vkCreateQueryPool( vkContext.device, &createInfo
+      , vkContext.allocatorCallbacks, &m_queryPools[i]) != VK_SUCCESS)
+    throw YaveLib::FatalVulkanInitError("failed to creates query pools!");
+  }
+}
+*/
 
 void	YaveRenderer::createSurface()
 {
-  if (m_surfaceHandler.createSurface(m_instance,
-        m_yaveInstanceParams.allocatorCallbacks, m_viewInfo.surface) != VK_SUCCESS)
+  if (m_yaveInstanceParams.surfaceHandler->createSurface(m_instance
+        , m_viewInfo.surface) != VK_SUCCESS)
     throw YaveLib::FatalVulkanInitError("failed to create surface!");
 }
 
 void	YaveRenderer::createSwapchain()
 {
-  if (m_swapchainHandler.createSwapchain(m_viewInfo) != VK_SUCCESS)
+  if (m_yaveInstanceParams.swapchainHandler->createSwapchain(m_viewInfo, vkContext.gpu) != VK_SUCCESS)
     throw YaveLib::FatalVulkanInitError("failed to create swapchain!");
-  vkContext.frameCount = m_viewInfo.frameCount
+  vkContext.frameCount = m_viewInfo.frameCount;
 }
 
-void	YaveRenderer::createImageViews()
+void	YaveRenderer::createImageView()
 {
-  if (m_imageViewsHandler.createImageViews(m_viewInfo) != VK_SUCCESS)
+  if (m_yaveInstanceParams.imageViewHandler->createImageViews(m_viewInfo) != VK_SUCCESS)
     throw YaveLib::FatalVulkanInitError("failed to create image views!");
 }
 
 void	YaveRenderer::createRenderPass()
 {
-  if (m_renderPassHandler.createRenderPass(m_viewInfo) != VK_SUCCESS)
+  if (m_yaveInstanceParams.renderPassHandler->createRenderPass(m_viewInfo) != VK_SUCCESS)
     throw YaveLib::FatalVulkanInitError("failed to create render pass!");
 }
 
 void	YaveRenderer::createFramebuffers()
 {
-  if (m_framebuffersHandler.createFramebuffers(m_viewInfo) != VK_SUCCESS)
+  if (m_yaveInstanceParams.framebuffersHandler->createFramebuffers(m_viewInfo) != VK_SUCCESS)
     throw YaveLib::FatalVulkanInitError("failed to create frame buffers!");
 }

@@ -3,7 +3,7 @@
 
 std::vector<char>   YaveLib::readBinaryFile(const std::string &filename)
 {
-  std::ifstream	file(filename, std::ios::ate | std::ios::binary);
+  std::ifstream	file(filename, std::ios::ate | std::ios::binary);nvim flash bug white rectangle
 
   if (!file.is_open())
     throw Yave::Error(std::string("error reading binary file ") + filename)

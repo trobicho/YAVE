@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "YaveException.h"
 
 namespace   YaveLib
 {

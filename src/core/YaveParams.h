@@ -1,5 +1,8 @@
 #pragma once
+#include "YaveContext.h"
+#include "YaveContextGlobal.h"
 #include <vector>
+#include <string>
 
 /*
    static const int	g_numValidationLayers = 1;
@@ -16,28 +19,28 @@
 
 struct	YaveViewInfo_t
 {
-  VkExtent			winExtent;
+  VkExtent2D			winExtent;
   VkSurfaceKHR			surface;
   VkSwapchainKHR	        swapchain;
   VkFormat			swapchainImageFormat;
   VkExtent2D			swapchainExtent;
   std::vector<VkImage>		swapchainImages;
   std::vector<VkImageView>	imageViews;
-  std::vector<VkFramebuffer>	frameBuffers;
+  std::vector<VkFramebuffer>	framebuffers;
   uint32_t			frameCount;
-}
+};
 
 /*
    =============
    Fully virtual handler class
    to handle creation of vulkan object
    =============
-   */
+*/
 
 class	YaveSurfaceHandler
 {
   public:
-    virtual	YaveSurfaceHandler() = 0;
+    //virtual	YaveSurfaceHandler() = 0;
 
     virtual VkResult	createSurface(VkInstance&, VkSurfaceKHR&) = 0;
 };
@@ -45,16 +48,16 @@ class	YaveSurfaceHandler
 class	YaveSwapchainHandler
 {
   public:
-    virtual	YaveSwapchainHandler() = 0;
+    //virtual	YaveSwapchainHandler() = 0;
 
-    virtual VkResult	createSwaphain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu) = 0;
+    virtual VkResult	createSwapchain(YaveViewInfo_t &viewInfo, gpuInfo_t &gpu) = 0;
     virtual VkResult	destroySwapchain(YaveViewInfo_t &viewInfo) = 0;
 };
 
 class	YaveImageViewsHandler
 {
   public:
-    virtual	YaveImageViewsHandler() = 0;
+    //virtual	YaveImageViewsHandler() = 0;
 
     virtual VkResult	createImageViews(YaveViewInfo_t &viewInfo) = 0;
     virtual VkResult	destroyImageViews(YaveViewInfo_t &viewInfo) = 0;
@@ -63,7 +66,7 @@ class	YaveImageViewsHandler
 class	YaveRenderPassHandler
 {
   public:
-    virtual	YaveRenderPassHandler() = 0;
+    //virtual	YaveRenderPassHandler() = 0;
 
     virtual VkResult	createRenderPass(YaveViewInfo_t &viewInfo) = 0;
     virtual VkResult	destroyRenderPass(YaveViewInfo_t &viewInfo) = 0;
@@ -72,7 +75,7 @@ class	YaveRenderPassHandler
 class	YaveFramebuffersHandler
 {
   public:
-    virtual	YaveFramebuffersHandler() = 0;
+    //virtual	YaveFramebuffersHandler() = 0;
 
     virtual VkResult	createFramebuffers(YaveViewInfo_t &viewInfo) = 0;
     virtual VkResult	destroyFramebuffers(YaveViewInfo_t &viewInfo) = 0;
@@ -93,13 +96,13 @@ struct	YaveInstanceParams_t
   std::vector<const char*>	deviceExtensions;
   VkExtent2D			windowExtent;
 
-  YaveSurfaceHandler		&surfaceHandler;
-  YaveSwapchainHandler		&swapchainHandler;
-  YaveImageViewHandler		&imageViewHandler;
-  YaveRenderPassHandler		&renderPassHandler;
-  YaveFramebuffersHandler	&framebuffersHandler;
+  YaveSurfaceHandler		*surfaceHandler;
+  YaveSwapchainHandler		*swapchainHandler;
+  YaveImageViewsHandler		*imageViewHandler;
+  YaveRenderPassHandler		*renderPassHandler;
+  YaveFramebuffersHandler	*framebuffersHandler;
 
-  VkPhysicalDeviceFeatures	deviceFeatures;
+  std::vector<VkPhysicalDeviceFeatures>	deviceFeatures;
   VkAllocationCallbacks		*allocatorCallbacks = nullptr; //TODO: wrap this thing with YaveAllocator or something probably going to be NULL a lot of time but idc
 };
 

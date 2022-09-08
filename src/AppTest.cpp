@@ -2,41 +2,40 @@
 
 VkResult    MyGLFWSurfaceHandler::createSurface(VkInstance &instance, VkSurfaceKHR &surface)
 {
-  return (glfwCreateWindowSurface(instance, m_win, vkContext.allocatorCallbacks, &surface));
+  return (glfwCreateWindowSurface(instance, m_window, vkContext.allocatorCallbacks, &surface));
 }
 
-void        AppTest::createInstanceParam()
+AppTest::AppTest(int width, int height) : m_width(width), m_height(height), m_surfaceHandler(nullptr)
 {
-  YaveInstanceParams_t	instanceParams = {
+  glfwInit();
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  m_window = glfwCreateWindow(width, height, "Yave test", nullptr, nullptr);
+
+  m_instanceParams = (YaveInstanceParams_t){
     .applicationName = "test",
     .validationLayers = {"VK_LAYER_LUNARG_standard_validation"},
     .instanceExtensions = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME},
     .deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
-    .windowExtent = (VkExtent2D){.witdh = m_width, .height = height},
-    .surfaceHandler = m_surfaceHandler,
-    .swapchainHandler = m_swapchainHandler,
-    .imageViewHandler = m_imageViewsHandler,
-    .renderPassHandler = m_renderPassHandler,
-    .framebuffersHandler = m_framebuffersHandler,
-    .deviceFeatures = VkPhysicalDeviceFeatures{},
+    .windowExtent = (VkExtent2D){.width = m_width, .height = m_height},
+    .surfaceHandler = &m_surfaceHandler,
+    .swapchainHandler = &m_swapchainHandler,
+    .imageViewHandler = &m_imageViewsHandler,
+    .renderPassHandler = &m_renderPassHandler,
+    .framebuffersHandler = &m_framebuffersHandler,
     .allocatorCallbacks = nullptr,
   };
+  m_instanceParams.deviceFeatures.push_back((VkPhysicalDeviceFeatures){});
 
   uint32_t	glfwExtCount;
   const char	**glfwExt = glfwGetRequiredInstanceExtensions(&glfwExtCount);
 
   for (int i = 0; i < glfwExtCount; ++i)
   {
-    instanceParams.instanceExtensions.push_back(glfwExt[i]);
+    m_instanceParams.instanceExtensions.push_back(glfwExt[i]);
   }
-}
 
-AppTest::AppTest(width, height) : m_width(width), m_height(height)
-{
-  glfwInit();
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZEABLE, GLFW_FALSE);
-  m_window = glfwCreateWindow(width, height, "Yave test", nullptr, nullptr);
+  m_surfaceHandler = MyGLFWSurfaceHandler(m_window);
 }
 
 AppTest::~AppTest()
@@ -47,14 +46,17 @@ AppTest::~AppTest()
 
 void	AppTest::run()
 {
-  main_loop();
+  YaveRenderer    renderer(m_instanceParams);
+
+  m_surfaceHandler.createSurface(renderer.getInstance(), renderer.getSurfaceKHR());
+  main_loop(renderer);
 }
 
-void	AppTest::main_loop()
+void	AppTest::main_loop(YaveRenderer &renderer)
 {
   while (!glfwWindowShouldClose(m_window))
   {
     glfwPollEvents();
-    m_renderer.drawFrame();
+    //m_renderer.drawFrame();
   }
 }

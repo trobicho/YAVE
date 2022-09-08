@@ -11,7 +11,7 @@ class	YaveBasicSwapchainHandler : public YaveSwapchainHandler
 
     static VkSurfaceFormatKHR   chooseSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats);
     static VkPresentModeKHR     choosePresentMode(std::vector<VkPresentModeKHR> &presentModes);
-    static VkExtent2D           chooseSurfaceExtent(VkSurfaceCapabilitiesKHR &caps);
+    static VkExtent2D           chooseSurfaceExtent(VkSurfaceCapabilitiesKHR &caps, VkExtent2D winExtent);
 
   private:
     uint32_t    m_frameCount;

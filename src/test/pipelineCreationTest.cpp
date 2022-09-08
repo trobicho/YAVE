@@ -1,5 +1,7 @@
 #include "pipelineCreationTest.h"
-#include "../core/YaveRenderRenderProgs.h"
+#include "../core/YaveRenderProgs.h"
+#include "../core/YaveContext.h"
+#include "../core/YaveContextGlobal.h"
 
 //--------------Basic Fixed Function---------------
 
@@ -93,15 +95,15 @@ static VkPipelineColorBlendStateCreateInfo      colorBlendStateInfo_noBlending()
 
 VkPipeline  BasicPipelineTest::createGraphicsPipeline(VkPipelineLayout &pipelineLayout)
 {
-  VkShaderModule	vertShaderModule = YaveRendererHelper::createShaderModule("../../test.vert");
-  VkShaderModule	fragShaderModule = YaveRendererHelper::createShaderModule("../../test.frag");
+  VkShaderModule	vertShaderModule = YaveRendererHelper::createShaderModuleFromFile("../../test.vert");
+  VkShaderModule	fragShaderModule = YaveRendererHelper::createShaderModuleFromFile("../../test.frag");
 
-  VkPipelineVertexInputStateCreateInfo    vertexInputInfo = vertexInputStateInfo_noInput();
-  VkPipelineInputAssemblyStateCreateInfo	inputAssemblyInfo = inputAssemblyStateInfo();
-  VkPipelineRasterizationStateCreateInfo	rasterizationInfo = rasterizationStateInfo();
-  VkPipelineMultisampleStateCreateInfo    multisampleInfo = multisampleStateInfo();
-  VkPipelineColorBlendStateCreateInfo     colorBlendInfo = colorBlendStateInfo();
-  VkPipelineViewportStateCreateInfo       viewportInfo = viewportStateInfo();
+  VkPipelineVertexInputStateCreateInfo      vertexInputInfo = vertexInputStateInfo_noInput();
+  VkPipelineInputAssemblyStateCreateInfo    inputAssemblyInfo = inputAssemblyStateInfo();
+  VkPipelineRasterizationStateCreateInfo    rasterizationInfo = rasterizationStateInfo();
+  VkPipelineMultisampleStateCreateInfo      multisampleInfo = multisampleStateInfo();
+  VkPipelineColorBlendStateCreateInfo       colorBlendInfo = colorBlendStateInfo_noBlending();
+  VkPipelineViewportStateCreateInfo         viewportInfo = viewportStateInfo();
   VkDynamicState dynamicStates[] = {
     VK_DYNAMIC_STATE_VIEWPORT,
     VK_DYNAMIC_STATE_SCISSOR
@@ -143,8 +145,8 @@ VkPipeline  BasicPipelineTest::createGraphicsPipeline(VkPipelineLayout &pipeline
   pipelineInfo.pVertexInputState = &vertexInputInfo;
   pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
   pipelineInfo.pViewportState = &viewportInfo;
-  pipelineInfo.pRasterizationState = &rasterizerInfo;
-  pipelineInfo.pMultisampleState = &multisamplingInfo;
+  pipelineInfo.pRasterizationState = &rasterizationInfo;
+  pipelineInfo.pMultisampleState = &multisampleInfo;
   pipelineInfo.pDepthStencilState = nullptr; // Optional
   pipelineInfo.pColorBlendState = &colorBlendInfo;
   pipelineInfo.pDynamicState = &dynamicStateInfo;
@@ -160,8 +162,8 @@ VkPipeline  BasicPipelineTest::createGraphicsPipeline(VkPipelineLayout &pipeline
 }
 
 void  BasicPipelineTest::destroyPipeline(VkPipeline  &pipeline
-    , VkPipelineLayout &pipelineLayout);
+    , VkPipelineLayout &pipelineLayout)
 {
-  vkDestroyPipeline(device, pipeline, nullptr);
-  vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+  vkDestroyPipeline(vkContext.device, pipeline, nullptr);
+  vkDestroyPipelineLayout(vkContext.device, pipelineLayout, nullptr);
 }

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdexcept>
+#include <string>
+using std::string;
+using std::exception;
 
 namespace	YaveLib
 {
@@ -59,4 +62,4 @@ namespace	YaveLib
       explicit	Error(const string& what_arg);
       explicit	Error(const char* what_arg);
   };
-};
+}

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CONTEXT_HEADER
+#define CONTEXT_HEADER
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -33,13 +34,10 @@ struct	vulkanContext_t
   uint32_t		frameCount;
 };
 
-extern vulkanContext_t	vkContext;
-
 class	DevicePicker
 {
   public:
-    virtual int&  rateDevice(gpuInfo_t &gpu);
+    virtual int  rateDevice(gpuInfo_t &gpu);
+};
 
-  private:
-    DevicePicker(){};
-}
+#endif

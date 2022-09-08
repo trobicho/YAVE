@@ -1,10 +1,13 @@
 #pragma once
+#include <cstdint>
+#include <vector>
+#include <vulkan/vulkan.h>
 
 struct	renderProgLimitInfo_t
 {
-  static uint32_t maxDescSets = 16384;
-  static uint32_t maxDescSetWrites = 32;
-  static uint32_t maxDescSetUniforms = 48;
+  const static uint32_t maxDescSets = 16384;
+  const static uint32_t maxDescSetWrites = 32;
+  const static uint32_t maxDescSetUniforms = 48;
 };
 
 struct	renderProg_t
@@ -15,7 +18,7 @@ struct	renderProg_t
 
     uint64_t	stateBits;
     VkPipeline	pipeline;
-  }
+  };
 
   std::vector<pipelineState_t>  pipelines;
   VkPipelineLayout              pipelineLayout;
@@ -30,7 +33,7 @@ class	YaveRenderProgManager
     void    Init();
 
     const renderProg_t&   getCurrentRenderProg() const {
-      return m_rendersProgs[m_currentRenderProg];
+      return m_renderProgs[m_currentRenderProg];
     }
 
   private:
