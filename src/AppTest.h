@@ -1,3 +1,4 @@
+#pragma once
 #include "core/YAVE.h"
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
@@ -17,7 +18,7 @@ class	MyGLFWSurfaceHandler : public YaveSurfaceHandler
 class	AppTest
 {
   public:
-    AppTest(int width, int height);
+    AppTest(uint32_t width, uint32_t height);
     ~AppTest();
 
     void    run();
@@ -30,8 +31,8 @@ class	AppTest
 
     YaveInstanceParams_t  m_instanceParams;
 
-    int   m_width;
-    int   m_height;
+    uint32_t   m_width;
+    uint32_t   m_height;
 
     MyGLFWSurfaceHandler            m_surfaceHandler;
     YaveBasicSwapchainHandler       m_swapchainHandler;

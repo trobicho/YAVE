@@ -1,7 +1,8 @@
 #include "pipelineCreationTest.h"
 #include "../core/YaveRenderProgs.h"
-#include "../core/YaveContext.h"
-#include "../core/YaveContextGlobal.h"
+#include "../core/YAVE.h"
+#include "../core/YaveRendererHelper.h"
+//#include "../core/YaveContextGlobal.h"
 
 //--------------Basic Fixed Function---------------
 
@@ -93,77 +94,78 @@ static VkPipelineColorBlendStateCreateInfo      colorBlendStateInfo_noBlending()
 
 //-----------------------------------------
 
-VkPipeline  BasicPipelineTest::createGraphicsPipeline(VkPipelineLayout &pipelineLayout)
-{
-  VkShaderModule	vertShaderModule = YaveRendererHelper::createShaderModuleFromFile("../../test.vert");
-  VkShaderModule	fragShaderModule = YaveRendererHelper::createShaderModuleFromFile("../../test.frag");
+namespace BasicPipelineTest {
+  VkPipeline  createGraphicsPipeline(VkPipelineLayout &pipelineLayout)
+  {
+    VkShaderModule	vertShaderModule = YaveRendererHelper::createShaderModuleFromFile("../../test.vert");
+    VkShaderModule	fragShaderModule = YaveRendererHelper::createShaderModuleFromFile("../../test.frag");
 
-  VkPipelineVertexInputStateCreateInfo      vertexInputInfo = vertexInputStateInfo_noInput();
-  VkPipelineInputAssemblyStateCreateInfo    inputAssemblyInfo = inputAssemblyStateInfo();
-  VkPipelineRasterizationStateCreateInfo    rasterizationInfo = rasterizationStateInfo();
-  VkPipelineMultisampleStateCreateInfo      multisampleInfo = multisampleStateInfo();
-  VkPipelineColorBlendStateCreateInfo       colorBlendInfo = colorBlendStateInfo_noBlending();
-  VkPipelineViewportStateCreateInfo         viewportInfo = viewportStateInfo();
-  VkDynamicState dynamicStates[] = {
-    VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR
-  };
-  VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
-  dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-  dynamicStateInfo.dynamicStateCount = 2;
-  dynamicStateInfo.pDynamicStates = dynamicStates;
+    VkPipelineVertexInputStateCreateInfo      vertexInputInfo = vertexInputStateInfo_noInput();
+    VkPipelineInputAssemblyStateCreateInfo    inputAssemblyInfo = inputAssemblyStateInfo();
+    VkPipelineRasterizationStateCreateInfo    rasterizationInfo = rasterizationStateInfo();
+    VkPipelineMultisampleStateCreateInfo      multisampleInfo = multisampleStateInfo();
+    VkPipelineColorBlendStateCreateInfo       colorBlendInfo = colorBlendStateInfo_noBlending();
+    VkPipelineViewportStateCreateInfo         viewportInfo = viewportStateInfo();
+    VkDynamicState dynamicStates[] = {
+      VK_DYNAMIC_STATE_VIEWPORT,
+      VK_DYNAMIC_STATE_SCISSOR
+    };
+    VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
+    dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicStateInfo.dynamicStateCount = 2;
+    dynamicStateInfo.pDynamicStates = dynamicStates;
 
-  VkPipelineShaderStageCreateInfo	vertShaderStageInfo = {};
-  vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-  vertShaderStageInfo.module = vertShaderModule;
-  vertShaderStageInfo.pName = "main"; //TODO: entrypoint
-  vertShaderStageInfo.pSpecializationInfo = nullptr;
-  VkPipelineShaderStageCreateInfo	fragShaderStageInfo = {};
-  vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  vertShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-  vertShaderStageInfo.module = fragShaderModule;
-  vertShaderStageInfo.pName = "main"; //TODO: entrypoint
-  vertShaderStageInfo.pSpecializationInfo = nullptr;
-  VkPipelineShaderStageCreateInfo	shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+    VkPipelineShaderStageCreateInfo	vertShaderStageInfo = {};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.pName = "main"; //TODO: entrypoint
+    vertShaderStageInfo.pSpecializationInfo = nullptr;
+    VkPipelineShaderStageCreateInfo	fragShaderStageInfo = {};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    vertShaderStageInfo.module = fragShaderModule;
+    vertShaderStageInfo.pName = "main"; //TODO: entrypoint
+    vertShaderStageInfo.pSpecializationInfo = nullptr;
+    VkPipelineShaderStageCreateInfo	shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
-  VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-  pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipelineLayoutInfo.setLayoutCount = 0; // Optional
-  pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-  pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-  pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 0; // Optional
+    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
+    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-  if (vkCreatePipelineLayout(vkContext.device, &pipelineLayoutInfo
-        , vkContext.allocatorCallbacks, &pipelineLayout) != VK_SUCCESS)
-    throw YaveLib::Error("failed to create pipeline layout!");
+    if (vkCreatePipelineLayout(vkContext.device, &pipelineLayoutInfo
+          , vkContext.allocatorCallbacks, &pipelineLayout) != VK_SUCCESS)
+      throw YaveLib::Error("failed to create pipeline layout!");
 
-  VkGraphicsPipelineCreateInfo  pipelineInfo{};
-  pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipelineInfo.stageCount = 2;
-  pipelineInfo.pStages = shaderStages;
-  pipelineInfo.pVertexInputState = &vertexInputInfo;
-  pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
-  pipelineInfo.pViewportState = &viewportInfo;
-  pipelineInfo.pRasterizationState = &rasterizationInfo;
-  pipelineInfo.pMultisampleState = &multisampleInfo;
-  pipelineInfo.pDepthStencilState = nullptr; // Optional
-  pipelineInfo.pColorBlendState = &colorBlendInfo;
-  pipelineInfo.pDynamicState = &dynamicStateInfo;
+    VkGraphicsPipelineCreateInfo  pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
+    pipelineInfo.pViewportState = &viewportInfo;
+    pipelineInfo.pRasterizationState = &rasterizationInfo;
+    pipelineInfo.pMultisampleState = &multisampleInfo;
+    pipelineInfo.pDepthStencilState = nullptr; // Optional
+    pipelineInfo.pColorBlendState = &colorBlendInfo;
+    pipelineInfo.pDynamicState = &dynamicStateInfo;
 
-  VkPipeline  pipeline;
-  if (vkCreateGraphicsPipelines(vkContext.device, VK_NULL_HANDLE, 1,
-        &pipelineInfo, vkContext.allocatorCallbacks, &pipeline) != VK_SUCCESS)
-    throw YaveLib::Error("failed to create graphics pipeline!");
+    VkPipeline  pipeline;
+    if (vkCreateGraphicsPipelines(vkContext.device, VK_NULL_HANDLE, 1,
+          &pipelineInfo, vkContext.allocatorCallbacks, &pipeline) != VK_SUCCESS)
+      throw YaveLib::Error("failed to create graphics pipeline!");
 
-  vkDestroyShaderModule(vkContext.device, vertShaderModule, vkContext.allocatorCallbacks);
-  vkDestroyShaderModule(vkContext.device, fragShaderModule, vkContext.allocatorCallbacks);
-  return (pipeline);
-}
+    vkDestroyShaderModule(vkContext.device, vertShaderModule, vkContext.allocatorCallbacks);
+    vkDestroyShaderModule(vkContext.device, fragShaderModule, vkContext.allocatorCallbacks);
+    return (pipeline);
+  }
 
-void  BasicPipelineTest::destroyPipeline(VkPipeline  &pipeline
-    , VkPipelineLayout &pipelineLayout)
-{
-  vkDestroyPipeline(vkContext.device, pipeline, nullptr);
-  vkDestroyPipelineLayout(vkContext.device, pipelineLayout, nullptr);
+  void  destroyPipeline(VkPipeline  &pipeline, VkPipelineLayout &pipelineLayout)
+  {
+    vkDestroyPipeline(vkContext.device, pipeline, nullptr);
+    vkDestroyPipelineLayout(vkContext.device, pipelineLayout, nullptr);
+  }
 }

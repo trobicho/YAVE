@@ -1,7 +1,8 @@
 #include "YaveRenderer.h"
 #include "YaveParams.h"
-#include "YaveRenderProgs.h"
 #include "../YaveLib/YaveException.h"
+#include "YaveContext.h"
+#include "YaveRenderProgs.h"
 #include <vector>
 #include <map>
 

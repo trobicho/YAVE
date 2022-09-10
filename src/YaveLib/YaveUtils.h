@@ -6,4 +6,4 @@
 namespace   YaveLib
 {
   std::vector<char>   readBinaryFile(const std::string &filename);
-};
+}

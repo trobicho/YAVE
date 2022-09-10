@@ -10,56 +10,105 @@ namespace	YaveLib
   class	FatalError: public exception
   {
     public:
-      explicit	FatalError(const string& what_arg);
-      explicit	FatalError(const char* what_arg);
+      //FatalError(const string& msg);
+      FatalError(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
   class	FatalVulkanInitError: public exception
   {
     public:
-      explicit	FatalVulkanInitError(const string& what_arg);
-      explicit	FatalVulkanInitError(const char* what_arg);
+      FatalVulkanInitError(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
   class	YaveRendererError: public exception
   {
     public:
-      explicit	YaveRendererError(const string& what_arg);
-      explicit	YaveRendererError(const char* what_arg);
+      YaveRendererError(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
   class	YaveInvalidInstanceParam: public exception
   {
     public:
-      explicit	YaveInvalidInstanceParam(const string& what_arg);
-      explicit	YaveInvalidInstanceParam(const char* what_arg);
+      YaveInvalidInstanceParam(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
   class	YaveInstanceParamError: public exception
   {
     public:
-      explicit	YaveInstanceParamError(const string& what_arg);
-      explicit	YaveInstanceParamError(const char* what_arg);
+      YaveInstanceParamError(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
   class	YaveHandlerError: public exception
   {
     public:
-      explicit	YaveHandlerError(const string& what_arg);
-      explicit	YaveHandlerError(const char* what_arg);
+      YaveHandlerError(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
   class	YaveHelperError: public exception
   {
     public:
-      explicit	YaveHelperError(const string& what_arg);
-      explicit	YaveHelperError(const char* what_arg);
+      YaveHelperError(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 
-  class Error: public exception
+  class	Error: public exception
   {
     public:
-      explicit	Error(const string& what_arg);
-      explicit	Error(const char* what_arg);
+      Error(string msg): message(msg) {};
+
+      const char * what () const throw ()
+      {
+        return message.c_str();
+      }
+    private:
+      string message;
   };
 }

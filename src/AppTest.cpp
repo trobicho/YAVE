@@ -5,7 +5,7 @@ VkResult    MyGLFWSurfaceHandler::createSurface(VkInstance &instance, VkSurfaceK
   return (glfwCreateWindowSurface(instance, m_window, vkContext.allocatorCallbacks, &surface));
 }
 
-AppTest::AppTest(int width, int height) : m_width(width), m_height(height), m_surfaceHandler(nullptr)
+AppTest::AppTest(uint32_t width, uint32_t height) : m_width(width), m_height(height), m_surfaceHandler(nullptr)
 {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

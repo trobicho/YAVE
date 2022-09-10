@@ -28,28 +28,30 @@ SHADERS_RESULT_NAME =	frag.spv \
                         vert.spv \
 
 SRCS_NAME =	main.cpp \
-                AppTest.cpp \
-                core/devicePickerBasic.cpp \
-                core/YaveParamsValidator.cpp \
-                core/YaveRenderer.cpp \
-                core/YaveRendererHelper.cpp \
-                core/YaveRenderProgs.cpp \
-                handlers/YaveBasicHandler.cpp \
-                test/pipelineCreationTest.cpp
+			AppTest.cpp \
+			core/devicePickerBasic.cpp \
+			core/YaveParamsValidator.cpp \
+			core/YaveRenderer.cpp \
+			core/YaveRendererHelper.cpp \
+			core/YaveRenderProgs.cpp \
+			core/YaveContext.cpp \
+			handlers/YaveBasicHandler.cpp \
+			YaveLib/YaveUtils.cpp \
+			test/pipelineCreationTest.cpp
 
 HDRS_NAME =	AppTest.h \
-                core/YAVE.h \
-                core/devicePickerBasic.h \
-                core/YaveParams.h \
-                core/YaveContext.h \
-                core/YaveContextGlobal.h \
-                core/YaveRenderer.h \
-                core/YaveRenderProgs.h \
-                core/YaveRendererHelper.h \
-                handlers/YaveBasicHandler.h \
-                YaveLib/YaveException.h \
-                YaveLib/YaveUtils.h \
-                test/pipelineCreationTest.h
+			core/YAVE.h \
+			core/devicePickerBasic.h \
+			core/YaveParams.h \
+			core/YaveContext.h \
+			core/YaveContextGlobal.h \
+			core/YaveRenderer.h \
+			core/YaveRenderProgs.h \
+			core/YaveRendererHelper.h \
+			handlers/YaveBasicHandler.h \
+			YaveLib/YaveException.h \
+			YaveLib/YaveUtils.h \
+			test/pipelineCreationTest.h
 
 OBJS_NAME	=	$(SRCS_NAME:.cpp=.o) 
 

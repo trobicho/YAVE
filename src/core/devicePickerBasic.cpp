@@ -3,4 +3,5 @@
 
 int DevicePickerBasic::rateDevice(gpuInfo_t &gpu) //TODO: Implemetation
 {
+  return (0);
 }
