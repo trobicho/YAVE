@@ -1,5 +1,5 @@
 # YAVE
-Yet Another Vulkan Engine
+Yet Another Vulkan Engine (abandoned)
 
 again somebody trying to redo opengl with vulkan (bad bad idea) lul.
 
